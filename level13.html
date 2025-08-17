@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Level 13 - Name Place Animal Thing</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #e6f7ff;
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    #question {
+      font-size: 2rem;
+      margin: 20px;
+    }
+    input {
+      font-size: 1.1rem;
+      padding: 8px;
+      margin: 8px;
+      width: 200px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 25px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 20px;
+      background-color: #ffccff;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #ff99ff;
+    }
+    #message {
+      font-size: 1.4rem;
+      margin-top: 20px;
+    }
+    #timer {
+      font-size: 1.5rem;
+      color: red;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Level 13 - Name Place Animal Thing</h1>
+  <div id="game">
+    <div id="question"></div>
+    <div id="timer"></div>
+    <div>
+      <input type="text" id="name" placeholder="Name">
+      <input type="text" id="place" placeholder="Place">
+      <input type="text" id="animal" placeholder="Animal">
+      <input type="text" id="thing" placeholder="Thing">
+    </div>
+    <br>
+    <button onclick="submitAnswer()">Submit</button>
+    <div id="message"></div>
+  </div>
+
+  <script>
+    let currentRound = 0;
+    const totalRounds = 3;
+    let currentLetter = '';
+    let timeLeft = 20;
+    let timerInterval;
+
+    function getRandomLetter() {
+      const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      return letters[Math.floor(Math.random() * 26)];
+    }
+
+    function startTimer() {
+      timeLeft = 20;
+      document.getElementById("timer").innerText = `⏳ Time left: ${timeLeft}s`;
+
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById("timer").innerText = `⏳ Time left: ${timeLeft}s`;
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          document.getElementById("message").innerHTML = `
+            Time’s up! <br>
+            <button onclick="retry()">Retry</button>
+          `;
+        }
+      }, 1000);
+    }
+
+    function showRound() {
+      if (currentRound < totalRounds) {
+        clearInterval(timerInterval);
+        currentLetter = getRandomLetter();
+        document.getElementById("question").innerText = 
+          `Round ${currentRound + 1}: Enter words starting with "${currentLetter}"`;
+        document.getElementById("name").value = '';
+        document.getElementById("place").value = '';
+        document.getElementById("animal").value = '';
+        document.getElementById("thing").value = '';
+        document.getElementById("message").innerText = '';
+        startTimer();
+      } else {
+        endGame();
+      }
+    }
+
+    function submitAnswer() {
+      const name = document.getElementById("name").value.trim();
+      const place = document.getElementById("place").value.trim();
+      const animal = document.getElementById("animal").value.trim();
+      const thing = document.getElementById("thing").value.trim();
+
+      if (
+        name.length > 0 && name[0].toUpperCase() === currentLetter &&
+        place.length > 0 && place[0].toUpperCase() === currentLetter &&
+        animal.length > 0 && animal[0].toUpperCase() === currentLetter &&
+        thing.length > 0 && thing[0].toUpperCase() === currentLetter
+      ) {
+        clearInterval(timerInterval);
+        currentRound++;
+        showRound();
+      } else {
+        clearInterval(timerInterval);
+        document.getElementById("message").innerHTML = `
+          Oops! All answers must start with "${currentLetter}". <br>
+          <button onclick="retry()">Retry</button>
+        `;
+      }
+    }
+
+    function endGame() {
+      clearInterval(timerInterval);
+      document.getElementById("question").innerText = "";
+      document.getElementById("timer").innerText = "";
+      document.getElementById("message").innerHTML = `
+        Cheesecake says: hehe just really checking your knowledge on english cause yes <br>
+        <button onclick="nextLevel()">Go to Next Level</button>
+      `;
+    }
+
+    function retry() {
+      currentRound = 0;
+      showRound();
+    }
+
+    function nextLevel() {
+      window.location.href = "level14.html"; // update link
+    }
+
+    showRound();
+  </script>
+</body>
+</html>

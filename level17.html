@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Level 17 - Memory Flip</title>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background-color: #f8f9fa;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    #board {
+      display: grid;
+      grid-template-columns: repeat(4, 80px);
+      grid-gap: 10px;
+    }
+    .card {
+      width: 80px;
+      height: 80px;
+      background-color: #fff;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.3s;
+    }
+    .flipped {
+      transform: rotateY(180deg);
+      background-color: #ffe4e1;
+    }
+    #message {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+    }
+    button {
+      margin-top: 15px;
+      padding: 12px 24px;
+      font-size: 16px;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: 0.3s;
+      display: none;
+    }
+    #retryBtn {
+      background-color: #ff6b6b;
+      color: white;
+    }
+    #retryBtn:hover {
+      background-color: #ff4c4c;
+    }
+    #nextBtn {
+      background-color: #ffb6c1;
+      color: white;
+    }
+    #nextBtn:hover {
+      background-color: #ff8fa3;
+    }
+  </style>
+</head>
+<body>
+  <h1>Level 17 - Memory Flip</h1>
+  <div id="board"></div>
+  <div id="message"></div>
+  <button id="retryBtn" onclick="location.reload()">Retry</button>
+  <button id="nextBtn" onclick="window.location.href='level18.html'">Go to Next Level</button>
+
+  <script>
+    const board = document.getElementById("board");
+    const message = document.getElementById("message");
+    const retryBtn = document.getElementById("retryBtn");
+    const nextBtn = document.getElementById("nextBtn");
+
+    const emojis = ["🐶","🐱","🐰","🐼","🦊","🐸","🐵","🐨"];
+    let cardsArray = [...emojis, ...emojis];
+    let firstCard = null;
+    let secondCard = null;
+    let lockBoard = false;
+    let matchedPairs = 0;
+
+    // Shuffle
+    cardsArray.sort(() => 0.5 - Math.random());
+
+    // Create cards
+    cardsArray.forEach((emoji, index) => {
+      const card = document.createElement("div");
+      card.classList.add("card");
+      card.dataset.emoji = emoji;
+      card.addEventListener("click", flipCard);
+      board.appendChild(card);
+    });
+
+    function flipCard() {
+      if (lockBoard) return;
+      if (this === firstCard) return;
+
+      this.textContent = this.dataset.emoji;
+      this.classList.add("flipped");
+
+      if (!firstCard) {
+        firstCard = this;
+        return;
+      }
+
+      secondCard = this;
+      lockBoard = true;
+
+      if (firstCard.dataset.emoji === secondCard.dataset.emoji) {
+        matchedPairs++;
+        resetCards();
+        if (matchedPairs === emojis.length) {
+          message.textContent = "Cheesecake says: you’ve got the memory of a fox 🦊";
+          nextBtn.style.display = "block";
+        }
+      } else {
+        setTimeout(() => {
+          firstCard.textContent = "";
+          secondCard.textContent = "";
+          firstCard.classList.remove("flipped");
+          secondCard.classList.remove("flipped");
+          resetCards();
+        }, 1000);
+      }
+    }
+
+    function resetCards() {
+      [firstCard, secondCard] = [null, null];
+      lockBoard = false;
+    }
+  </script>
+</body>
+</html>

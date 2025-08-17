@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Level 3 - Find the Ball</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background-color: #fff9e6;
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    h1 {
+      margin-top: 20px;
+      font-size: 2rem;
+      color: #d2691e;
+    }
+
+    .game-container {
+      position: relative;
+      width: 600px;
+      height: 300px;
+      margin-top: 40px;
+    }
+
+    .cup {
+      position: absolute;
+      width: 120px;
+      height: 150px;
+      transition: left 0.6s ease;
+      cursor: pointer;
+    }
+
+    .cup img {
+      width: 100%;
+    }
+
+    .cup.lift {
+      transform: translateY(-60px);
+    }
+
+    .ball {
+      position: absolute;
+      width: 40px;
+      top: 100px;
+      left: 90px;
+      display: none;
+      z-index: 0;
+    }
+
+    #message {
+      margin-top: 30px;
+      font-size: 1.3rem;
+      color: #d6336c;
+      text-align: center;
+    }
+
+    #next-level-btn, #retry-btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      background: #ff69b4;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      display: none;
+    }
+
+    @media screen and (max-width: 700px) {
+      .game-container {
+        width: 100%;
+      }
+      .cup {
+        width: 90px;
+      }
+      .ball {
+        width: 30px;
+        top: 85px;
+        left: 65px;
+      }
+      .cup.lift {
+        transform: translateY(-50px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Level 3 - Find the Ball 🎩</h1>
+  <p>Watch the ball... then track it through the shuffle!</p>
+
+  <div class="game-container" id="game">
+    <img src="images/ball.png" class="ball" id="ball">
+
+    <div class="cup" id="cup0"><img src="images/cup.png"></div>
+    <div class="cup" id="cup1"><img src="images/cup.png"></div>
+    <div class="cup" id="cup2"><img src="images/cup.png"></div>
+  </div>
+
+  <div id="message"></div>
+  <button id="next-level-btn" onclick="goToLevel4()">Go to Level 4</button>
+  <button id="retry-btn" onclick="retryGame()">Retry</button>
+
+  <script>
+    const cups = [document.getElementById("cup0"), document.getElementById("cup1"), document.getElementById("cup2")];
+    const ball = document.getElementById("ball");
+
+    let positions = [60, 240, 420]; // initial left px positions for each cup
+    let cupIndexes = [0, 1, 2]; // tracks which visual index is where
+    let ballIndex = Math.floor(Math.random() * 3); // 🟡 ball starts randomly
+    let canClick = false;
+
+    // Place cups visually
+    function setCupPositions() {
+      cups.forEach((cup, i) => {
+        cup.style.left = positions[i] + 'px';
+      });
+    }
+
+    // Place ball under correct cup
+    function updateBallPosition() {
+      ball.style.left = (positions[ballIndex] + 30) + "px";
+    }
+
+    // Reveal ball before shuffle
+    function revealBall() {
+      ball.style.display = "block";
+      updateBallPosition();
+
+      setTimeout(() => {
+        ball.style.display = "none";
+        shuffleCups(Math.floor(Math.random() * 3) + 6); // 🎲 random shuffle 6–8 times
+      }, 2000);
+    }
+
+    function shuffleCups(times) {
+      if (times === 0) {
+        canClick = true;
+        return;
+      }
+
+      const [i, j] = pickTwoIndexes();
+      
+      // Swap indexes
+      [cupIndexes[i], cupIndexes[j]] = [cupIndexes[j], cupIndexes[i]];
+      [positions[i], positions[j]] = [positions[j], positions[i]];
+
+      // Animate cups
+      setCupPositions();
+
+      // Update ballIndex if needed
+      if (ballIndex === i) ballIndex = j;
+      else if (ballIndex === j) ballIndex = i;
+
+      setTimeout(() => shuffleCups(times - 1), 700);
+    }
+
+    function pickTwoIndexes() {
+      let i = Math.floor(Math.random() * 3);
+      let j;
+      do {
+        j = Math.floor(Math.random() * 3);
+      } while (i === j);
+      return [i, j];
+    }
+
+    cups.forEach((cup, i) => {
+      cup.addEventListener("click", () => {
+        if (!canClick) return;
+        canClick = false;
+
+        cup.classList.add("lift");
+
+        if (i === ballIndex) {
+          ball.style.display = "block";
+          updateBallPosition();
+          document.getElementById("message").innerHTML =
+            "🎉 Correct!<br>cheesecake says: You see right through me &lt;3";
+          document.getElementById("next-level-btn").style.display = "inline-block";
+        } else {
+          ball.style.display = "block";
+          updateBallPosition();
+          document.getElementById("message").innerHTML =
+            "❌ Wrong cup! Wanna try again?";
+          document.getElementById("retry-btn").style.display = "inline-block";
+        }
+      });
+    });
+
+    function retryGame() {
+      location.reload();
+    }
+
+    function goToLevel4() {
+      window.location.href = "level4.html";
+    }
+
+    // Initial setup
+    setCupPositions();
+
+    // Begin reveal + shuffle after delay
+    setTimeout(() => {
+      revealBall();
+    }, 1000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Level 16 - Wordle</title>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background-color: #f8f9fa;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    #clue {
+      font-size: 16px;
+      margin-bottom: 20px;
+      font-style: italic;
+      color: #555;
+    }
+    #board {
+      display: grid;
+      grid-template-rows: repeat(6, 1fr);
+      gap: 5px;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 5px;
+    }
+    .tile {
+      width: 60px;
+      height: 60px;
+      border: 2px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: bold;
+      text-transform: uppercase;
+      background-color: white;
+    }
+    .correct {
+      background-color: #6aaa64; /* green */
+      color: white;
+    }
+    .present {
+      background-color: #c9b458; /* yellow */
+      color: white;
+    }
+    .absent {
+      background-color: #787c7e; /* grey */
+      color: white;
+    }
+    #message {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+    }
+    button {
+      margin-top: 15px;
+      padding: 12px 24px;
+      font-size: 16px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: 0.3s;
+      display: none;
+    }
+    #retryBtn {
+      background-color: #ff6b6b;
+      color: white;
+    }
+    #retryBtn:hover {
+      background-color: #ff4c4c;
+    }
+    #nextBtn {
+      background-color: #ffb6c1;
+      color: white;
+      border-radius: 20px;
+    }
+    #nextBtn:hover {
+      background-color: #ff8fa3;
+    }
+  </style>
+</head>
+<body>
+  <h1>Level 16 - Wordle</h1>
+  <div id="clue">Clue: What’s the one thing Cheesecake loves the most in this whole world?</div>
+  <div id="board"></div>
+  <div id="message"></div>
+  <button id="retryBtn" onclick="location.reload()">Retry</button>
+  <button id="nextBtn" onclick="window.location.href='level17.html'">Go to Next Level</button>
+
+  <script>
+    const solution = "KUVAM";
+    const board = document.getElementById("board");
+    const message = document.getElementById("message");
+    const retryBtn = document.getElementById("retryBtn");
+    const nextBtn = document.getElementById("nextBtn");
+
+    let currentRow = 0;
+    let currentCol = 0;
+    let grid = [];
+
+    // Create grid
+    for (let r = 0; r < 6; r++) {
+      const row = [];
+      const rowDiv = document.createElement("div");
+      rowDiv.classList.add("row");
+      for (let c = 0; c < 5; c++) {
+        const tile = document.createElement("div");
+        tile.classList.add("tile");
+        rowDiv.appendChild(tile);
+        row.push(tile);
+      }
+      board.appendChild(rowDiv);
+      grid.push(row);
+    }
+
+    let gameOver = false;
+
+    document.addEventListener("keydown", (e) => {
+      if (gameOver) return;
+
+      if (e.key === "Backspace" && currentCol > 0) {
+        currentCol--;
+        grid[currentRow][currentCol].textContent = "";
+      } else if (/^[a-zA-Z]$/.test(e.key) && currentCol < 5) {
+        grid[currentRow][currentCol].textContent = e.key.toUpperCase();
+        currentCol++;
+      } else if (e.key === "Enter" && currentCol === 5) {
+        checkGuess();
+      }
+    });
+
+    function checkGuess() {
+      const guess = grid[currentRow].map(tile => tile.textContent).join("");
+      if (guess.length < 5) return;
+
+      let solutionArray = solution.split("");
+      let guessArray = guess.split("");
+
+      // Mark tiles
+      for (let i = 0; i < 5; i++) {
+        if (guessArray[i] === solutionArray[i]) {
+          grid[currentRow][i].classList.add("correct");
+          solutionArray[i] = null;
+          guessArray[i] = null;
+        }
+      }
+      for (let i = 0; i < 5; i++) {
+        if (guessArray[i] && solutionArray.includes(guessArray[i])) {
+          grid[currentRow][i].classList.add("present");
+          solutionArray[solutionArray.indexOf(guessArray[i])] = null;
+        } else if (guessArray[i]) {
+          grid[currentRow][i].classList.add("absent");
+        }
+      }
+
+      if (guess === solution) {
+        gameOver = true;
+        message.textContent = "Cheesecake says: finally, you got me 🫶";
+        nextBtn.style.display = "block";
+      } else if (currentRow === 5) {
+        gameOver = true;
+        message.textContent = "Out of tries! The word was " + solution;
+        retryBtn.style.display = "block";
+      } else {
+        currentRow++;
+        currentCol = 0;
+      }
+    }
+  </script>
+</body>
+</html>

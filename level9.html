@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Level 9 - Balloon Balance</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #fce4ec;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #gameCanvas {
+            display: block;
+            margin: auto;
+            background-color: #b3e5fc;
+        }
+        .game-button {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
+            font-size: 18px;
+            border: none;
+            border-radius: 50px;
+            background-color: pink;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<canvas id="gameCanvas" width="800" height="600"></canvas>
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+let bgY = 0;
+const bgSpeed = 3;
+
+let balloonImg = new Image();
+balloonImg.src = "images/balloon.png";
+
+let cloudImg = new Image();
+cloudImg.src = "images/cloud.png";
+
+let birdImg = new Image();
+birdImg.src = "images/bird.png";
+
+let balloon = {
+    x: canvas.width / 2 - 40,
+    y: canvas.height - 150,
+    width: 80,
+    height: 100
+};
+
+let keys = {};
+let obstacles = [];
+let finishLineHeight = 50;
+let finishLineY = -3000;
+
+let gameOver = false;
+let win = false;
+let buttonCreated = false;
+
+// Event listeners
+document.addEventListener("keydown", (e) => keys[e.key] = true);
+document.addEventListener("keyup", (e) => keys[e.key] = false);
+
+function spawnObstacle() {
+    let type = Math.random() < 0.5 ? "cloud" : "bird";
+    let img = type === "cloud" ? cloudImg : birdImg;
+    let size = type === "cloud" ? 100 : 60;
+    let x = Math.random() * (canvas.width - size);
+    obstacles.push({ x: x, y: -size, width: size, height: size, img: img });
+}
+
+function checkCollision(a, b) {
+    return (
+        a.x < b.x + b.width &&
+        a.x + a.width > b.x &&
+        a.y < b.y + b.height &&
+        a.y + a.height > b.y
+    );
+}
+
+function createButton(text, link) {
+    let btn = document.createElement("button");
+    btn.innerText = text;
+    btn.className = "game-button";
+    btn.style.top = "60%";
+    btn.onclick = () => window.location.href = link;
+    document.body.appendChild(btn);
+
+    let msg = document.createElement("div");
+    msg.style.textAlign = "center";
+    msg.style.fontSize = "20px";
+    msg.style.marginTop = "20px";
+    msg.innerText = win ? "Cheesecake says: I really wanna pop a balloon now" : "Oops! Try again!";
+    document.body.appendChild(msg);
+}
+
+function update() {
+    if (gameOver) return;
+
+    // Scroll background
+    bgY += bgSpeed;
+    if (bgY >= canvas.height) bgY = 0;
+
+    // Balloon movement
+    const moveSpeed = 6;
+    if (keys["ArrowLeft"] && balloon.x > 0) {
+        balloon.x -= moveSpeed;
+    }
+    if (keys["ArrowRight"] && balloon.x < canvas.width - balloon.width) {
+        balloon.x += moveSpeed;
+    }
+
+    // Move obstacles
+    for (let o of obstacles) {
+        o.y += bgSpeed + 1;
+    }
+    obstacles = obstacles.filter(o => o.y < canvas.height);
+
+    // Spawn obstacles
+    if (Math.random() < 0.02) spawnObstacle();
+
+    // Collision check
+    for (let o of obstacles) {
+        if (checkCollision(balloon, o)) {
+            gameOver = true;
+            win = false;
+            if (!buttonCreated) {
+                createButton("Retry", "level9.html");
+                buttonCreated = true;
+            }
+        }
+    }
+
+    // Finish line
+    finishLineY += bgSpeed;
+    if (finishLineY >= canvas.height - finishLineHeight) {
+        win = true;
+        gameOver = true;
+        if (!buttonCreated) {
+            createButton("Next Level", "level10.html");
+            buttonCreated = true;
+        }
+    }
+}
+
+function draw() {
+    // Background scrolling effect
+    ctx.fillStyle = "#b3e5fc";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#e1f5fe";
+    ctx.fillRect(0, bgY, canvas.width, canvas.height);
+    ctx.fillRect(0, bgY - canvas.height, canvas.width, canvas.height);
+
+    // Draw finish line
+    ctx.fillStyle = "red";
+    ctx.fillRect(0, finishLineY, canvas.width, finishLineHeight);
+
+    // Draw obstacles
+    for (let o of obstacles) {
+        ctx.drawImage(o.img, o.x, o.y, o.width, o.height);
+    }
+
+    // Draw balloon
+    ctx.drawImage(balloonImg, balloon.x, balloon.y, balloon.width, balloon.height);
+}
+
+function gameLoop() {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+</body>
+</html>

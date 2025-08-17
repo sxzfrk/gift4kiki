@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Level 12 - Guess the Next Alphabet</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f0f8ff;
+    }
+    h1 {
+      color: #333;
+    }
+    #question {
+      font-size: 2rem;
+      margin: 20px;
+    }
+    input {
+      font-size: 1.2rem;
+      padding: 8px;
+      margin-top: 10px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 20px;
+      background-color: pink;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #ffb6c1;
+    }
+    #message {
+      font-size: 1.5rem;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Level 12 - Guess the Next Alphabet</h1>
+  <div id="game">
+    <div id="question"></div>
+    <input type="text" id="answer" maxlength="1" placeholder="Your answer">
+    <br>
+    <button onclick="submitAnswer()">Submit</button>
+    <div id="message"></div>
+  </div>
+
+  <script>
+    let currentQuestion = 0;
+    let score = 0;
+    let currentLetter = '';
+    const totalQuestions = 5;
+
+    function getRandomLetter() {
+      const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      return letters[Math.floor(Math.random() * 25)]; // avoid Z
+    }
+
+    function showQuestion() {
+      if (currentQuestion < totalQuestions) {
+        currentLetter = getRandomLetter();
+        document.getElementById("question").innerText = 
+          `What comes after: ${currentLetter}?`;
+        document.getElementById("answer").value = '';
+        document.getElementById("message").innerText = '';
+      } else {
+        endGame();
+      }
+    }
+
+    function submitAnswer() {
+      const userAnswer = document.getElementById("answer").value.toUpperCase();
+      const correctAnswer = String.fromCharCode(currentLetter.charCodeAt(0) + 1);
+
+      if (userAnswer === correctAnswer) {
+        score++;
+      }
+      currentQuestion++;
+      showQuestion();
+    }
+
+    function endGame() {
+      const messageDiv = document.getElementById("message");
+      if (score === totalQuestions) {
+        messageDiv.innerHTML = `
+          Cheesecake says: your ABCs are strong hehe <br>
+          <button onclick="nextLevel()">Go to Next Level</button>
+        `;
+      } else {
+        messageDiv.innerHTML = `
+          Oops! You scored ${score}/${totalQuestions}. <br>
+          <button onclick="retry()">Retry</button>
+        `;
+      }
+      document.getElementById("question").innerText = "";
+    }
+
+    function retry() {
+      currentQuestion = 0;
+      score = 0;
+      showQuestion();
+    }
+
+    function nextLevel() {
+      window.location.href = "level13.html"; // update link to Level 13
+    }
+
+    showQuestion();
+  </script>
+</body>
+</html>

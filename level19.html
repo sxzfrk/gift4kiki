@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HAPPY BIRTHDAY KIKI</title>
+  <style>
+    body {
+      background-color: black;
+      color: #f6e27f; /* pastel yellow */
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      text-align: center;
+    }
+    h1 {
+      margin-top: 20px;
+      font-size: 3em;
+    }
+    #birthdayMessage {
+      display: none;
+      margin-top: 50px; /* push it far below cake */
+      font-size: 1.5em;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎂 HAPPY BIRTHDAY KIKI 🎂</h1>
+  <canvas id="cakeCanvas" width="600" height="550"></canvas> <!-- increased height -->
+  <p id="birthdayMessage">🎉 Surprise! Happiest birthday to the love of my life, my bestest friend, my home, my comfort person, my everything. youre the one person that's always managed to brighten up my world even at its darkest. i love you so so fucking much my love. i dont think life wouldve been worth living and fighting for if you werent a part of it. you mean so much to me and i know youre probably tired of listening to this but you are my person. no matter what happens youre the first person i run to talk about it, to scream about it, to cry about it. youre such a sunshine fr. this safe space that you created for me, that lets me be my true self without any judgement, throughout the years, youve always been the one person i was always able to trust and let down my guard to. its amazing this energy you have, being in the same room as you is enough to calm my whole being and just absolutely let loose and live. youre so caring and protective and wonderful and no matter what, you will always be my bestest fucking friend ever. im never letting you go. so deal with it. youre stuck with my annoying ass for a really long time lmao. my cutie little lobster. i wish i could run into your arms and tackle you into this huge hug where we almost fall down and scream happy birthday out of pure excitement. ITS YOUR DAY WOHOOOO. it should be a national holiday tbh, to celebrate my favorite human's existence but well we shall make do for now. thank you for everything baby, for always sticking by my side, for being silly and weird with me rather than judging me, for listening to me yapping your ear off every other night, for patiently handling my tantrums, and most importantly for making me realise im worth everything too. youve taught me how to love myself, youve been there through the worst, stayed, and made me realise the things i consider to be my weakness are only really my strengths. youve helped me rediscover myself and loved me when i truly believed i was too scarred to be loved like that. i cant thank you enough for how much all of that saved me. i truly literally do mean it when i say you saved me. gosh i love you so much. im so in love with every part of you, your smile, your eyes, and the way you turn all goofy and cute everytime something makes you happy, the way you giggle, and the sassy diva youve turned into. i love all of you so much baby. every moment i spend with you, i try to cherish, i try to memorize every expression, every curve, every word and i end up reliving it every time i think of you. im addicted to you. its hard not to be with you. gosh i have way too much to tell you but i cant put into words but gosh i wish you could see how badly im smiling rn and maybe i am blushing. i miss you baby boy. my kuchupuchu. ik you have an hectic day ahead, but eat an extra piece of cake for me please? and have an absolute blast. i wish i couldve spent it with you, spoiling you with kissies, maybe more (definitely more), maybe i'll find ways to spoil you either way throughout the day ;) i love you kiki <3 yours forever, cheesecake</p>
+
+  <script>
+    const canvas = document.getElementById("cakeCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let flames = [];
+    let candlesExtinguished = false;
+
+    function drawCake() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Cake base
+      ctx.fillStyle = "#4b2e2e"; // chocolate
+      ctx.fillRect(150, 300, 300, 150);
+
+      // Cream layer
+      ctx.fillStyle = "#f5d6ba";
+      ctx.fillRect(150, 280, 300, 30);
+
+      // Curve top corners slightly
+      ctx.beginPath();
+      ctx.moveTo(150, 280);
+      ctx.quadraticCurveTo(150, 260, 170, 260);
+      ctx.lineTo(430, 260);
+      ctx.quadraticCurveTo(450, 260, 450, 280);
+      ctx.closePath();
+      ctx.fillStyle = "#f5d6ba";
+      ctx.fill();
+
+      // Candles (sit on top of cake)
+      ctx.fillStyle = "white";
+      for (let i = 0; i < 5; i++) {
+        let x = 190 + i * 60;
+        ctx.fillRect(x, 210, 10, 70); // lowered candle base
+        if (!candlesExtinguished) {
+          flames[i] = { x: x + 5, y: 200 };
+          drawFlame(flames[i].x, flames[i].y);
+        }
+      }
+    }
+
+    function drawFlame(x, y) {
+      ctx.beginPath();
+      ctx.ellipse(x, y, 8, 12, 0, 0, 2 * Math.PI);
+      ctx.fillStyle = "orange";
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(x, y - 5, 5, 8, 0, 0, 2 * Math.PI);
+      ctx.fillStyle = "yellow";
+      ctx.fill();
+    }
+
+    // Mic detection
+    async function initMic() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const analyser = audioContext.createAnalyser();
+        const source = audioContext.createMediaStreamSource(stream);
+        source.connect(analyser);
+        const data = new Uint8Array(analyser.frequencyBinCount);
+
+        function checkBlow() {
+          analyser.getByteFrequencyData(data);
+          let volume = data.reduce((a, b) => a + b, 0) / data.length;
+          if (volume > 80 && !candlesExtinguished) { // threshold
+            candlesExtinguished = true;
+            document.getElementById("birthdayMessage").style.display = "block";
+          }
+          requestAnimationFrame(checkBlow);
+        }
+        checkBlow();
+      } catch (err) {
+        console.error("Mic error:", err);
+      }
+    }
+
+    function animate() {
+      drawCake();
+      if (!candlesExtinguished) {
+        flames.forEach(f => {
+          f.y = 200 + Math.sin(Date.now() / 100 + f.x) * 3;
+          drawFlame(f.x, f.y);
+        });
+      }
+      requestAnimationFrame(animate);
+    }
+
+    drawCake();
+    animate();
+    initMic();
+  </script>
+</body>
+</html>

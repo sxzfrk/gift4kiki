@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Level 1 - Balloon Pop</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body style="background-color: white;">
+  <section class="level" id="level1">
+    <h1 class="level-title">🎈 Level 1 🎈</h1>
+    <p>Click the balloon bunch to pop it 🎯</p>
+
+    <div class="balloon-area">
+      <img src="images/balloon.png" id="main-balloon" class="balloon" alt="Balloon Bunch">
+    </div>
+  </section>
+
+  <section class="level hidden" id="next-step">
+    <h2>🎉 You passed Level 1!</h2>
+    <p class="personal-note">Your cheesecake is so excited for you &lt;3</p>
+    <button onclick="goToLevel2()">Go to Level 2</button>
+  </section>
+
+  <canvas id="confetti-canvas"></canvas>
+
+  <script src="confetti.js"></script>
+  <script>
+    const balloon = document.getElementById('main-balloon');
+    const nextStep = document.getElementById('next-step');
+
+    // Ask for notification permission when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+      if (Notification.permission !== 'granted') {
+        Notification.requestPermission();
+      }
+    });
+
+    function showPopNotification() {
+      if (Notification.permission === 'granted') {
+        new Notification("🎉 Balloon popped!", {
+          body: "You passed Level 1. Your cheesecake is so excited for you <3",
+          icon: "images/balloon.png" // Optional: replace with a cuter icon if you want
+        });
+      }
+    }
+
+    balloon.addEventListener('click', () => {
+      balloon.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+      balloon.style.transform = 'scale(0.5)';
+      balloon.style.opacity = '0';
+      startConfetti();
+      showPopNotification(); // 🔔 trigger browser notification
+      setTimeout(() => {
+        nextStep.classList.remove('hidden');
+      }, 600);
+    });
+
+    function goToLevel2() {
+      window.location.href = "level2.html";
+    }
+  </script>
+</body>
+</html>

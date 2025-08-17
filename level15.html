@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Level 15 - Tower Balance</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #cce6ff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      font-family: "Comic Sans MS", sans-serif;
+    }
+    canvas {
+      background-color: #f0f8ff;
+      border: 3px solid #555;
+      border-radius: 12px;
+    }
+    #message {
+      position: absolute;
+      top: 20px;
+      font-size: 22px;
+      font-weight: bold;
+      text-align: center;
+      width: 100%;
+    }
+    .btn {
+      position: absolute;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 25px;
+      border: none;
+      border-radius: 25px;
+      background-color: pink;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      display: none;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+    }
+    .btn:hover {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas" width="400" height="600"></canvas>
+  <div id="message"></div>
+  <button class="btn" id="retryBtn" onclick="restartGame()">Retry</button>
+  <button class="btn" id="nextBtn" onclick="goToNextLevel()">Next Level</button>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let blocks = [];
+    let currentBlock = {
+      x: 150,
+      y: 0,
+      width: 100,
+      height: 20,
+      color: getRandomColor(),
+      direction: 2 // auto move speed
+    };
+    let isDropping = false;
+    let score = 0;
+    const winScore = 25;
+    let gameOver = false;
+
+    function getRandomColor() {
+      const pastel = ["#ffb3ba","#ffdfba","#ffffba","#baffc9","#bae1ff"];
+      return pastel[Math.floor(Math.random() * pastel.length)];
+    }
+
+    function drawBlock(block) {
+      ctx.fillStyle = block.color;
+      ctx.fillRect(block.x, block.y, block.width, block.height);
+      ctx.strokeStyle = "#555";
+      ctx.strokeRect(block.x, block.y, block.width, block.height);
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw stable tower blocks
+      blocks.forEach(block => drawBlock(block));
+
+      // Draw moving/falling block
+      if (!gameOver) {
+        drawBlock(currentBlock);
+      }
+    }
+
+    function update() {
+      if (!isDropping && !gameOver) {
+        // auto move left and right
+        currentBlock.x += currentBlock.direction;
+        if (currentBlock.x <= 0 || currentBlock.x + currentBlock.width >= canvas.width) {
+          currentBlock.direction *= -1; // bounce
+        }
+      }
+
+      if (isDropping && !gameOver) {
+        currentBlock.y += 5;
+        let targetY = canvas.height - (blocks.length + 1) * 20;
+
+        if (currentBlock.y >= targetY) {
+          currentBlock.y = targetY;
+
+          // Check landing alignment
+          let topBlock = blocks[blocks.length-1];
+          if (blocks.length === 0 || 
+              (currentBlock.x + currentBlock.width > topBlock.x && currentBlock.x < topBlock.x + topBlock.width)) {
+            blocks.push({ ...currentBlock });
+            score++;
+            if (score >= winScore) {
+              showWin();
+            } else {
+              resetCurrentBlock();
+            }
+          } else {
+            showLose();
+          }
+        }
+      }
+    }
+
+    function resetCurrentBlock() {
+      currentBlock = {
+        x: 150,
+        y: 0,
+        width: 100,
+        height: 20,
+        color: getRandomColor(),
+        direction: 2
+      };
+      isDropping = false;
+    }
+
+    function showWin() {
+      gameOver = true;
+      document.getElementById("message").textContent =
+        "Cheesecake says: so THIS is how you’ll build our future house? 🏠";
+      document.getElementById("nextBtn").style.display = "block";
+    }
+
+    function showLose() {
+      gameOver = true;
+      document.getElementById("message").textContent =
+        "You lost! The tower fell 💔";
+      document.getElementById("retryBtn").style.display = "block";
+    }
+
+    function restartGame() {
+      location.reload();
+    }
+
+    function goToNextLevel() {
+      window.location.href = "level16.html"; // adjust filename
+    }
+
+    function gameLoop() {
+      update();
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (!gameOver && e.key === " ") {
+        isDropping = true;
+      }
+    });
+
+    gameLoop();
+  </script>
+</body>
+</html>

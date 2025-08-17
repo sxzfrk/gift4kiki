@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Level 14 - Fox, Chicken, and Grain Riddle</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f2f9ff;
+    }
+    h1 { margin: 20px; color: #333; }
+    #river {
+      position: relative;
+      width: 100%;
+      height: 250px;
+      background: linear-gradient(to right, #b3e5fc 50%, #81d4fa 50%);
+      overflow: hidden;
+      margin: 20px auto;
+      border: 3px solid #333;
+      border-radius: 12px;
+    }
+    .bank {
+      position: absolute;
+      width: 25%;
+      height: 100%;
+      background-color: #dcedc8;
+      border: 2px solid #333;
+      border-radius: 10px;
+      padding: 10px;
+    }
+    #left-bank { left: 0; }
+    #right-bank { right: 0; }
+    .bank h2 { margin-top: 0; }
+    #boat {
+      position: absolute;
+      bottom: 20px;
+      left: 25%;
+      width: 140px;
+      height: 70px;
+      background-color: #a1887f;
+      border: 2px solid #333;
+      border-radius: 15px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      transition: left 2s ease-in-out;
+      font-size: 1.5rem;
+    }
+    .item {
+      display: inline-block;
+      margin: 5px;
+      font-size: 2rem;
+      cursor: pointer;
+    }
+    .in-boat {
+      position: absolute;
+      bottom: 45px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 2rem;
+      transition: left 2s ease-in-out;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 25px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 20px;
+      background-color: #ffccff;
+      cursor: pointer;
+    }
+    button:hover { background-color: #ff99ff; }
+    #message {
+      font-size: 1.2rem;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Level 14 - The River Crossing Riddle</h1>
+  <p>Help the farmer 👨‍🌾 get the fox 🦊, chicken 🐔, and grain 🌾 across without trouble!</p>
+
+  <div id="river">
+    <div class="bank" id="left-bank">
+      <h2>Left Bank</h2>
+      <div id="left-items"></div>
+    </div>
+    <div class="bank" id="right-bank">
+      <h2>Right Bank</h2>
+      <div id="right-items"></div>
+    </div>
+    <div id="boat">👨‍🌾</div>
+  </div>
+
+  <button onclick="crossRiver()">Cross River</button>
+  <div id="message"></div>
+
+  <script>
+    let leftBank = ["fox", "chicken", "grain"];
+    let rightBank = [];
+    let boatSide = "left";
+    let boatItem = null;
+
+    function renderBanks() {
+      document.getElementById("left-items").innerHTML = leftBank.map(item => 
+        `<span class="item" onclick="pickUp('${item}')">${emoji(item)}</span>`).join("");
+      document.getElementById("right-items").innerHTML = rightBank.map(item => 
+        `<span class="item" onclick="pickUp('${item}')">${emoji(item)}</span>`).join("");
+    }
+
+    function emoji(item) {
+      if (item === "fox") return "🦊";
+      if (item === "chicken") return "🐔";
+      if (item === "grain") return "🌾";
+    }
+
+    function pickUp(item) {
+      if (boatItem === item) {
+        // put back on the bank
+        boatItem = null;
+        renderBanks();
+        document.getElementById("message").innerText = `Farmer puts down ${item}.`;
+        document.getElementById("boat").innerHTML = "👨‍🌾";
+      } else if (!boatItem) {
+        // pick up
+        boatItem = item;
+        if (boatSide === "left") {
+          leftBank = leftBank.filter(i => i !== item);
+        } else {
+          rightBank = rightBank.filter(i => i !== item);
+        }
+        renderBanks();
+        document.getElementById("boat").innerHTML = "👨‍🌾 " + emoji(item);
+        document.getElementById("message").innerText = `Farmer picks up ${item}.`;
+      } else {
+        document.getElementById("message").innerText = `Farmer can only carry one item at a time!`;
+      }
+    }
+
+    function crossRiver() {
+      let boat = document.getElementById("boat");
+
+      if (boatSide === "left") {
+        boat.style.left = "70%"; // move right
+        boatSide = "right";
+      } else {
+        boat.style.left = "25%"; // move left
+        boatSide = "left";
+      }
+
+      // After animation, move items logically
+      setTimeout(() => {
+        if (boatItem) {
+          if (boatSide === "right") {
+            rightBank.push(boatItem);
+          } else {
+            leftBank.push(boatItem);
+          }
+          document.getElementById("boat").innerHTML = "👨‍🌾";
+          boatItem = null;
+          renderBanks();
+        }
+
+        // Check loss
+        if (checkLoss()) {
+          document.getElementById("message").innerHTML =
+            `😢 Oh no! Something got eaten.<br><button onclick="reset()">Retry</button>`;
+          disable();
+          return;
+        }
+
+        // Check win
+        if (rightBank.length === 3) {
+          document.getElementById("message").innerHTML =
+            `🎉 Cheesecake says: You solved it!<br><button onclick="nextLevel()">Next Level</button>`;
+        } else {
+          document.getElementById("message").innerText = "Farmer crossed safely.";
+        }
+      }, 2000); // match boat transition
+    }
+
+    function checkLoss() {
+      if (boatSide !== "left") {
+        if (leftBank.includes("fox") && leftBank.includes("chicken")) return true;
+        if (leftBank.includes("chicken") && leftBank.includes("grain")) return true;
+      }
+      if (boatSide !== "right") {
+        if (rightBank.includes("fox") && rightBank.includes("chicken")) return true;
+        if (rightBank.includes("chicken") && rightBank.includes("grain")) return true;
+      }
+      return false;
+    }
+
+    function disable() {
+      document.querySelectorAll(".item").forEach(el => el.onclick = null);
+    }
+
+    function reset() {
+      leftBank = ["fox", "chicken", "grain"];
+      rightBank = [];
+      boatSide = "left";
+      boatItem = null;
+      document.getElementById("boat").style.left = "25%";
+      document.getElementById("boat").innerHTML = "👨‍🌾";
+      document.getElementById("message").innerText = "";
+      renderBanks();
+    }
+
+    function nextLevel() {
+      window.location.href = "level15.html";
+    }
+
+    renderBanks();
+  </script>
+</body>
+</html>

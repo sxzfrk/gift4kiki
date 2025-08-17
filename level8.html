@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Level 8 - Road Crossing</title>
+  <style>
+    body {
+      background-color: #fdf6f0;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    h1 {
+      margin-top: 20px;
+      color: #ff7aa2;
+    }
+
+    #gameContainer {
+      position: relative;
+      margin: 20px auto;
+      background-color: #555;
+      width: 600px;
+      height: 500px;
+      border: 3px solid #333;
+      overflow: hidden;
+    }
+
+    .road {
+      position: absolute;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(
+        to bottom,
+        #555 0px,
+        #555 80px,
+        #666 80px,
+        #666 160px
+      );
+    }
+
+    .laneLine {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background-color: yellow;
+      opacity: 0.7;
+    }
+
+    .player {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      background-color: #ffb6c1;
+      border-radius: 50%;
+      bottom: 10px;
+      left: 285px;
+      z-index: 2;
+    }
+
+    .car {
+      position: absolute;
+      width: 50px;
+      height: 30px;
+      background-color: #87cefa;
+      top: 0;
+      border-radius: 6px;
+    }
+
+    #message {
+      font-size: 18px;
+      color: #ff7aa2;
+      margin-top: 15px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      background-color: #ffb6c1;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Level 8 - Road Crossing</h1>
+<div id="gameContainer">
+  <div class="road" id="road"></div>
+  <div class="player" id="player"></div>
+</div>
+
+<div id="message"></div>
+<button id="retryBtn" class="btn hidden" onclick="startGame()">Retry</button>
+<button id="nextBtn" class="btn hidden" onclick="window.location.href='level9.html'">Next Level</button>
+
+<script>
+  const player = document.getElementById('player');
+  const road = document.getElementById('road');
+  const retryBtn = document.getElementById('retryBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const message = document.getElementById('message');
+  const gameContainer = document.getElementById('gameContainer');
+
+  let playerX = 285;
+  let playerY = 460;
+  let cars = [];
+  let gameRunning = true;
+  let spawnInterval;
+
+  function createLaneLines() {
+    for (let i = 1; i < 5; i++) {
+      const line = document.createElement('div');
+      line.classList.add('laneLine');
+      line.style.top = `${i * 100}px`;
+      road.appendChild(line);
+    }
+  }
+
+  function spawnCar() {
+    const car = document.createElement('div');
+    car.classList.add('car');
+
+    const direction = Math.random() > 0.5 ? 'right' : 'left';
+    car.dataset.direction = direction;
+
+    const lane = Math.floor(Math.random() * 5);
+    car.style.top = `${lane * 100 + 35}px`;
+
+    if (direction === 'right') {
+      car.style.left = `-60px`;
+    } else {
+      car.style.left = `610px`;
+    }
+
+    car.style.backgroundColor = `hsl(${Math.random() * 360}, 70%, 70%)`;
+
+    road.appendChild(car);
+    cars.push(car);
+  }
+
+  function moveCars() {
+    cars.forEach((car, index) => {
+      let carX = parseInt(car.style.left);
+
+      if (car.dataset.direction === 'right') {
+        carX += 3;
+        if (carX > 650) {
+          car.remove();
+          cars.splice(index, 1);
+        }
+      } else {
+        carX -= 3;
+        if (carX < -60) {
+          car.remove();
+          cars.splice(index, 1);
+        }
+      }
+      car.style.left = `${carX}px`;
+
+      if (checkCollision(player, car)) {
+        gameOver(false);
+      }
+    });
+  }
+
+  function checkCollision(a, b) {
+    const rectA = a.getBoundingClientRect();
+    const rectB = b.getBoundingClientRect();
+    return !(
+      rectA.top > rectB.bottom ||
+      rectA.bottom < rectB.top ||
+      rectA.right < rectB.left ||
+      rectA.left > rectB.right
+    );
+  }
+
+  function gameOver(win) {
+    gameRunning = false;
+    clearInterval(spawnInterval);
+
+    if (win) {
+      message.textContent = "Cheesecake says: atleast one of us knows how to cross a road";
+      nextBtn.classList.remove('hidden');
+    } else {
+      message.textContent = "Oops! You got hit.";
+      retryBtn.classList.remove('hidden');
+    }
+  }
+
+  function startGame() {
+    // Reset
+    playerX = 285;
+    playerY = 460;
+    player.style.left = `${playerX}px`;
+    player.style.top = `${playerY}px`;
+    message.textContent = "";
+    retryBtn.classList.add('hidden');
+    nextBtn.classList.add('hidden');
+    cars.forEach(car => car.remove());
+    cars = [];
+    gameRunning = true;
+
+    spawnInterval = setInterval(spawnCar, 1200);
+    gameLoop();
+  }
+
+  function gameLoop() {
+    if (!gameRunning) return;
+    moveCars();
+    requestAnimationFrame(gameLoop);
+
+    if (playerY <= 0) {
+      gameOver(true);
+    }
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (!gameRunning) return;
+    const speed = 5;
+    if (e.key === 'ArrowUp') playerY -= speed;
+    if (e.key === 'ArrowDown') playerY += speed;
+    if (e.key === 'ArrowLeft') playerX -= speed;
+    if (e.key === 'ArrowRight') playerX += speed;
+
+    // Boundaries
+    if (playerX < 0) playerX = 0;
+    if (playerX > 570) playerX = 570;
+    if (playerY < 0) playerY = 0;
+    if (playerY > 470) playerY = 470;
+
+    player.style.left = `${playerX}px`;
+    player.style.top = `${playerY}px`;
+  });
+
+  createLaneLines();
+  startGame();
+</script>
+
+</body>
+</html>
