@@ -11,7 +11,7 @@ let frame = 0;
 let score = 0;
 let gameOver = false;
 let gameWon = false;
-const totalPipesToWin = 20;
+const totalPipesToWin = 10;
 
 // Bird movement
 document.addEventListener("keydown", e => {
@@ -116,3 +116,4 @@ function endGame(win) {
 }
 
 loop();
+
